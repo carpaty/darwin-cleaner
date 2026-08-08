@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build and test
+        run: >-
+          xcodebuild test
+          -project DarwinCleaner.xcodeproj
+          -scheme DarwinCleaner
+          -destination 'platform=macOS'
+          -derivedDataPath .build/DerivedData
+          CODE_SIGNING_ALLOWED=NO
+
