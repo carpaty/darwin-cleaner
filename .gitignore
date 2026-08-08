@@ -4,6 +4,7 @@
 .swiftpm/xcode/xcuserdata/
 
 # Xcode build output
+DarwinCleaner.xcodeproj/
 DerivedData/
 build/
 *.xcarchive
