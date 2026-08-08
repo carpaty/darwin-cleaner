@@ -2,11 +2,11 @@ import SwiftUI
 
 @main
 struct DarwinCleanerApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var cleaner = CleanerViewModel()
-    @AppStorage("showMenuBarItem") private var showMenuBarItem = true
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup("Darwin Cleaner", id: AppController.mainWindowID) {
             ContentView()
                 .environmentObject(cleaner)
                 .frame(minWidth: 860, minHeight: 600)
@@ -26,10 +26,5 @@ struct DarwinCleanerApp: App {
                 .frame(width: 460, height: 260)
         }
 
-        MenuBarExtra("Darwin Cleaner", systemImage: "sparkles", isInserted: $showMenuBarItem) {
-            MenuBarView()
-                .environmentObject(cleaner)
-        }
-        .menuBarExtraStyle(.menu)
     }
 }

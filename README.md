@@ -2,6 +2,8 @@
 
 Darwin Cleaner is a small, transparent macOS cleaner built with SwiftUI. It scans a fixed allowlist of user-owned locations, shows every candidate before cleanup, skips symbolic links, and moves recoverable items to the macOS Trash.
 
+Licensed under the [MIT License](LICENSE).
+
 ## What it scans
 
 - `~/Library/Caches` (items older than 7 days)
@@ -26,6 +28,8 @@ Each item has one of three safety levels:
 The sidebar includes three-state selection controls for Smart Scan and every category. The checkbox selects or deselects the whole category, while clicking the category name only filters the results; this prevents browsing a risky category from implicitly selecting it.
 
 Results can be searched by name and sorted by name or size. Cleanup errors are summarized in a compact alert; the complete report is available through Copy Details.
+
+When the main window is closed and the menu-bar icon is enabled, Darwin Cleaner switches to accessory mode and leaves the Dock. Clicking the menu-bar icon directly recreates and activates the main window. If the menu-bar icon is disabled in Settings, the app stays in the Dock so it cannot become unreachable.
 
 Package manager paths are excluded from the general cache category to prevent duplicate cleanup. Commands are launched without a shell, from a fixed executable allowlist, with fixed arguments. Docker uses `docker system prune --force` without `--volumes`.
 
