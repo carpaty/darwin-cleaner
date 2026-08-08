@@ -17,6 +17,7 @@ struct ContentView: View {
     }
 
     @EnvironmentObject private var cleaner: CleanerViewModel
+    @Environment(\.openWindow) private var openWindow
     @State private var showingCleanupConfirmation = false
     @State private var searchText = ""
     @State private var itemSort: ItemSort = .nameAscending
@@ -61,6 +62,7 @@ struct ContentView: View {
                  : "Selected items are moved to Trash and can be restored.")
         }
         .task {
+            AppController.shared.install(openWindowAction: openWindow)
             if cleaner.phase == .idle { cleaner.scan() }
         }
     }
