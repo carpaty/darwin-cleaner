@@ -86,9 +86,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard statusItem == nil else { return }
             let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
             if let button = item.button {
-                let image = NSApp.applicationIconImage.copy() as? NSImage
+                let image = NSImage(named: "TrayIcon")?.copy() as? NSImage
                 image?.size = NSSize(width: 18, height: 18)
-                image?.isTemplate = false
+                image?.isTemplate = true
                 image?.accessibilityDescription = "Darwin Cleaner"
                 button.image = image
                 button.toolTip = "Open Darwin Cleaner"
