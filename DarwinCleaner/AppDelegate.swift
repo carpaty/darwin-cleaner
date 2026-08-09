@@ -30,8 +30,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc private func statusItemClicked(_ sender: Any?) {
+    @objc private func showMainWindow(_ sender: Any?) {
         AppController.shared.showMainWindow()
+    }
+
+    @objc private func showSettings(_ sender: Any?) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: self) {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: self)
+        }
+    }
+
+    @objc private func showAbout(_ sender: Any?) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(sender)
+    }
+
+    @objc private func quit(_ sender: Any?) {
+        NSApp.terminate(sender)
     }
 
     @objc private func windowDidBecomeMain(_ notification: Notification) {
@@ -39,13 +57,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func windowWillClose(_ notification: Notification) {
-        guard isMenuBarItemEnabled,
-              let closingWindow = notification.object as? NSWindow else { return }
-        let hasAnotherVisibleWindow = NSApp.windows.contains {
-            $0 !== closingWindow && $0.isVisible && $0.canBecomeMain
-        }
-        if !hasAnotherVisibleWindow {
-            NSApp.setActivationPolicy(.accessory)
+        guard isMenuBarItemEnabled else { return }
+        Task { @MainActor [weak self] in
+            await Task.yield()
+            guard self?.isMenuBarItemEnabled == true else { return }
+            let hasVisibleWindow = NSApp.windows.contains {
+                $0.isVisible && $0.canBecomeMain
+            }
+            if !hasVisibleWindow {
+                NSApp.setActivationPolicy(.accessory)
+            }
         }
     }
 
@@ -65,17 +86,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard statusItem == nil else { return }
             let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
             if let button = item.button {
-                button.image = NSImage(systemSymbolName: "sparkles", accessibilityDescription: "Darwin Cleaner")
-                button.image?.isTemplate = true
-                button.target = self
-                button.action = #selector(statusItemClicked(_:))
+                let image = NSApp.applicationIconImage.copy() as? NSImage
+                image?.size = NSSize(width: 18, height: 18)
+                image?.isTemplate = false
+                image?.accessibilityDescription = "Darwin Cleaner"
+                button.image = image
                 button.toolTip = "Open Darwin Cleaner"
             }
+            item.menu = makeStatusMenu()
             statusItem = item
         } else if let statusItem {
             NSStatusBar.system.removeStatusItem(statusItem)
             self.statusItem = nil
             NSApp.setActivationPolicy(.regular)
         }
+    }
+
+    private func makeStatusMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.addItem(menuItem(title: "Open Darwin Cleaner", action: #selector(showMainWindow(_:))))
+        menu.addItem(.separator())
+        menu.addItem(menuItem(title: "Settings…", action: #selector(showSettings(_:))))
+        menu.addItem(menuItem(title: "About Darwin Cleaner", action: #selector(showAbout(_:))))
+        menu.addItem(.separator())
+        menu.addItem(menuItem(title: "Quit Darwin Cleaner", action: #selector(quit(_:)), keyEquivalent: "q"))
+        return menu
+    }
+
+    private func menuItem(title: String, action: Selector, keyEquivalent: String = "") -> NSMenuItem {
+        let item = NSMenuItem(title: title, action: action, keyEquivalent: keyEquivalent)
+        item.target = self
+        return item
     }
 }
